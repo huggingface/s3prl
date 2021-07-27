@@ -75,7 +75,7 @@ class Runner():
         if "from_hf_hub" in self.args and self.args.from_hf_hub == True:
             from huggingface_hub import snapshot_download
 
-            print(f'Downloading upstream model from the Hugging Face Hub {self.args.upstream}')
+            print(f'Downloading upstream model {self.args.upstream} from the Hugging Face Hub')
             filepath = snapshot_download(self.args.upstream)
             sys.path.append(filepath)
 
