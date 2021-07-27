@@ -81,7 +81,7 @@ class Runner():
 
             from expert import UpstreamExpert
             Upstream = UpstreamExpert
-            ckpt_path = os.path.join(filepath, "model.pt")
+            ckpt_path = os.path.join(filepath, self.args.upstream_model_name)
         else:
             Upstream = getattr(hub, self.args.upstream)
             ckpt_path = self.args.upstream_ckpt
