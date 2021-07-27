@@ -23,8 +23,8 @@ RUN mkdir /app/data
 # Fine-tune!
 ENV upstream_model hubert
 ENV downstream_task asr
-ENV expt_name asr
 
 WORKDIR /app/s3prl
 # Each task's config.yaml is used to set all the training parameters
-CMD python run_downstream.py -n ${expt_name} -m train -u ${upstream_model} -d ${downstream_task}
+# The results of each training run are stored in /app/s3prl/result/downstream/{downstream_task}
+CMD python run_downstream.py -n ${downstream_task} -m train -u ${upstream_model} -d ${downstream_task}
