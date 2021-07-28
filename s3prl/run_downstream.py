@@ -55,7 +55,6 @@ def get_downstream_args():
     parser.add_argument('--hub', default="torch", choices=["torch", "huggingface"],
         help='The model Hub used to retrieve the upstream model.')
 
-    #upstreams = [attr for attr in dir(hub) if callable(getattr(hub, attr)) and attr[0] != '_']
     parser.add_argument('-u', '--upstream',  help='\
         Some upstream variants need local ckpt or config file.\
         Some download needed files on-the-fly and cache them.\
@@ -193,8 +192,6 @@ def main():
 
     if args.hub == "huggingface":
         args.from_hf_hub = True
-    args.upstream_model_name = ""
-    args.device = "cpu" # Just to try in my computer
     runner = Runner(args, config)
     eval(f'runner.{args.mode}')()
 
