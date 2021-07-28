@@ -34,17 +34,17 @@ specaug:
 
 downstream_expert:
   datarc:
-    train: ['train']
-    dev-clean: ['dev']
-    dev-other: ['dev']
-    test-clean: ['test']
-    test-other: ['test']
+    train: ['train-clean-100']
+    dev-clean: ['dev-clean']
+    dev-other: ['dev-other']
+    test-clean: ['test-clean']
+    test-other: ['test-other']
     num_workers: 12
     train_batch_size: 32
     batch_size: 32
     eval_batch_size: 1
-    libri_root: 'data/Librispeech'
-    bucket_file: 'data/Librispeech/len_for_bucket'
+    libri_root: '/app/data/LibriSpeech'
+    bucket_file: '/app/data/LibriSpeech/len_for_bucket'
     dict_path: "./downstream/asr/char.dict"
 
     zero_infinity: True
