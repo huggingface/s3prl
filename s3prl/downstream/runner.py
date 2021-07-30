@@ -439,19 +439,24 @@ class Runner():
         upstream_model = self.args.upstream.replace("/", "__")
         repo_name = f"superb-s3prl-{upstream_model}-{self.args.downstream}"
         repo_url = HfApi().create_repo(
-            token=huggingface_token, 
-            name=repo_name, 
-            organization=hf_user, 
-            exist_ok=True, 
-            private=True)
+            token=huggingface_token,
+            name=repo_name,
+            organization=hf_user,
+            exist_ok=True,
+            private=True,
+        )
         print(f"Created Hub repo: {repo_url}")
         # Download repo and copy templates
         REPO_PATH = self.args.expdir + "/hub_repo"
-        model_repo = Repository(local_dir=REPO_PATH, clone_from=repo_url, use_auth_token=huggingface_token)
+        model_repo = Repository(
+            local_dir=REPO_PATH, clone_from=repo_url, use_auth_token=huggingface_token
+        )
         TEMPLATES_PATH = f"./downstream/{self.args.downstream}/hf_hub_templates"
         shutil.copytree(TEMPLATES_PATH, REPO_PATH, dirs_exist_ok=True)
         # Copy the final checkpoint
-        CKPT_PATH = self.args.expdir + f"/states-{self.config['runner']['total_steps']}.ckpt"
+        CKPT_PATH = (
+            self.args.expdir + f"/states-{self.config['runner']['total_steps']}.ckpt"
+        )
         # By default we use model.ckpt in the PretrainedModel interface
         shutil.copy(CKPT_PATH, REPO_PATH + "/model.ckpt")
         model_repo.lfs_track("*.ckpt")
