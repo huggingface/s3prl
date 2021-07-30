@@ -2,6 +2,7 @@ import os
 import sys
 import math
 import glob
+import uuid
 import shutil
 import random
 import tempfile
@@ -437,7 +438,7 @@ class Runner():
         print(f"HF Hub user: {hf_user}")
         # Create repo on the Hub
         upstream_model = self.args.upstream.replace("/", "__")
-        repo_name = f"superb-s3prl-{upstream_model}-{self.args.downstream}"
+        repo_name = f"superb-s3prl-{upstream_model}-{self.args.downstream}-{str(uuid.uuid4())[:8]}"
         repo_url = HfApi().create_repo(
             token=huggingface_token,
             name=repo_name,
@@ -453,12 +454,13 @@ class Runner():
         )
         TEMPLATES_PATH = f"./downstream/{self.args.downstream}/hf_hub_templates"
         shutil.copytree(TEMPLATES_PATH, REPO_PATH, dirs_exist_ok=True)
-        # Copy the final checkpoint
+        # Copy checkpoints, tensorboard logs, and args / configs
+        shutil.copytree(self.args.expdir, REPO_PATH, dirs_exist_ok=True)
+        # By default we use model.ckpt in the PreTrainedModel interface
         CKPT_PATH = (
-            self.args.expdir + f"/states-{self.config['runner']['total_steps']}.ckpt"
+            REPO_PATH + f"/states-{self.config['runner']['total_steps']}.ckpt"
         )
-        # By default we use model.ckpt in the PretrainedModel interface
-        shutil.copy(CKPT_PATH, REPO_PATH + "/model.ckpt")
+        shutil.move(CKPT_PATH, REPO_PATH + "/model.ckpt")
         model_repo.lfs_track("*.ckpt")
         print("Pushing checkpoint to the Hub")
         model_repo.push_to_hub()
