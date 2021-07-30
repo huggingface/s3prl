@@ -450,21 +450,31 @@ class Runner():
         print(f"Created Hub repo: {repo_url}")
 
         # Download repo and copy templates
-        REPO_PATH = self.args.expdir + "/hub_repo"
+        REPO_PATH = self.args.expdir + "/hub_repo/"
         model_repo = Repository(
             local_dir=REPO_PATH, clone_from=repo_url, use_auth_token=huggingface_token
         )
-        TEMPLATES_PATH = f"./downstream/{self.args.downstream}/hf_hub_templates"
+        TEMPLATES_PATH = f"./downstream/{self.args.downstream}/hf_hub_templates/"
         shutil.copytree(TEMPLATES_PATH, REPO_PATH, dirs_exist_ok=True)
 
         # Copy checkpoints, tensorboard logs, and args / configs
         shutil.copytree(self.args.expdir, REPO_PATH, dirs_exist_ok=True)
 
-        # By default we use model.ckpt in the PreTrainedModel interface
+        # Inject upstream model name into model card
+        with open(REPO_PATH + "README.md", "r+") as f:
+            readme = f.read()
+            readme = readme.replace("${upstream_model}", self.args.upstream)
+            f.seek(0)
+            f.write(readme)
+            f.truncate()
+
+        # By default we use model.ckpt in the PreTrainedModel interface, so
+        # rename the last checkpoint to match this convention
         CKPT_PATH = (
-            REPO_PATH + f"/states-{self.config['runner']['total_steps']}.ckpt"
+            REPO_PATH + f"states-{self.config['runner']['total_steps']}.ckpt"
         )
-        shutil.move(CKPT_PATH, REPO_PATH + "/model.ckpt")
+        shutil.move(CKPT_PATH, REPO_PATH + "model.ckpt")
         model_repo.lfs_track("*.ckpt")
-        print("Pushing checkpoint to the Hub")
+        print("Pushing model files to the Hub ...")
         model_repo.push_to_hub()
+        print("Training run complete!")
