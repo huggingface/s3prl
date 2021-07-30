@@ -23,6 +23,8 @@ from s3prl.schedulers import get_scheduler
 from s3prl.upstream.interfaces import Featurizer
 from s3prl.utility.helper import is_leader_process, get_model_state, show, defaultdict
 
+from huggingface_hub import HfApi, HfFolder, Repository
+
 SAMPLE_RATE = 16000
 
 
@@ -332,6 +334,7 @@ class Runner():
             epoch += 1
 
         pbar.close()
+        self.push_to_huggingface_hub(logger)
         if is_leader_process():
             logger.close()
 
@@ -424,3 +427,32 @@ class Runner():
             features = self.upstream.model(wavs)
             features = self.featurizer.model(wavs, features)
             self.downstream.model.inference(features, [filename])
+
+    def push_to_huggingface_hub(self, logger):
+        # Setup auth
+        hf_user = os.environ.get("HF_USERNAME")
+        hf_password = os.environ.get("HF_PASSWORD")
+        huggingface_token = HfApi().login(username=hf_user, password=hf_password)
+        HfFolder.save_token(huggingface_token)
+        logger.debug(f"HF HUB User: {hf_user}")
+        # Create repo on the Hub
+        repo_name = f"superb-s3prl-{self.args.upstream}-{self.args.downstream}"
+        repo_url = HfApi().create_repo(
+            token=huggingface_token, 
+            name=repo_name, 
+            organization=hf_user, 
+            exist_ok=True, 
+            private=True)
+        logger.info(f"Created Hub repo: {repo_url}")
+        # Download repo and copy templates
+        CKPT_PATH = self.args.expdir
+        MODEL_PATH = self.args.expdir + "hub_repo"
+        model_repo = Repository(local_dir=MODEL_PATH, clone_from=repo_url, use_auth_token=huggingface_token)
+        shutil.copytree("./downstream/hf_hub_templates", MODEL_PATH)
+        shutil.copy(CKPT_PATH + f"states-{self.config.runner.total_steps}.ckpt", MODEL_PATH)
+        model_repo.lfs_track("*.ckpt")
+        logger.info("Pushing evaluation to Hub")
+        try:
+            model_repo.push_to_hub()
+        except Exception:
+            logger.info("Nothing to commit, move ahead")
