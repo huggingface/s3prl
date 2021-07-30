@@ -334,7 +334,7 @@ class Runner():
             epoch += 1
 
         pbar.close()
-        self.push_to_huggingface_hub(logger)
+        self.push_to_huggingface_hub()
         if is_leader_process():
             logger.close()
 
@@ -428,31 +428,32 @@ class Runner():
             features = self.featurizer.model(wavs, features)
             self.downstream.model.inference(features, [filename])
 
-    def push_to_huggingface_hub(self, logger):
+    def push_to_huggingface_hub(self):
         # Setup auth
         hf_user = os.environ.get("HF_USERNAME")
         hf_password = os.environ.get("HF_PASSWORD")
         huggingface_token = HfApi().login(username=hf_user, password=hf_password)
         HfFolder.save_token(huggingface_token)
-        logger.debug(f"HF HUB User: {hf_user}")
+        print(f"HF Hub user: {hf_user}")
         # Create repo on the Hub
-        repo_name = f"superb-s3prl-{self.args.upstream}-{self.args.downstream}"
+        upstream_model = self.args.upstream.replace("/", "__")
+        repo_name = f"superb-s3prl-{upstream_model}-{self.args.downstream}"
         repo_url = HfApi().create_repo(
             token=huggingface_token, 
             name=repo_name, 
             organization=hf_user, 
             exist_ok=True, 
             private=True)
-        logger.info(f"Created Hub repo: {repo_url}")
+        print(f"Created Hub repo: {repo_url}")
         # Download repo and copy templates
-        CKPT_PATH = self.args.expdir
-        MODEL_PATH = self.args.expdir + "hub_repo"
-        model_repo = Repository(local_dir=MODEL_PATH, clone_from=repo_url, use_auth_token=huggingface_token)
-        shutil.copytree("./downstream/hf_hub_templates", MODEL_PATH)
-        shutil.copy(CKPT_PATH + f"states-{self.config.runner.total_steps}.ckpt", MODEL_PATH)
+        REPO_PATH = self.args.expdir + "/hub_repo"
+        model_repo = Repository(local_dir=REPO_PATH, clone_from=repo_url, use_auth_token=huggingface_token)
+        TEMPLATES_PATH = f"./downstream/{self.args.downstream}/hf_hub_templates"
+        shutil.copytree(TEMPLATES_PATH, REPO_PATH, dirs_exist_ok=True)
+        # Copy the final checkpoint
+        CKPT_PATH = self.args.expdir + f"/states-{self.config['runner']['total_steps']}.ckpt"
+        # By default we use model.ckpt in the PretrainedModel interface
+        shutil.copy(CKPT_PATH, REPO_PATH + "/model.ckpt")
         model_repo.lfs_track("*.ckpt")
-        logger.info("Pushing evaluation to Hub")
-        try:
-            model_repo.push_to_hub()
-        except Exception:
-            logger.info("Nothing to commit, move ahead")
+        print("Pushing checkpoint to the Hub")
+        model_repo.push_to_hub()
