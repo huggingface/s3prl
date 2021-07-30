@@ -1,5 +1,7 @@
 ---
 library_name: superb
+benchmark: superb
+task: asr
 tags:
 - superb
 - automatic-speech-recognition
