@@ -436,6 +436,7 @@ class Runner():
         huggingface_token = HfApi().login(username=hf_user, password=hf_password)
         HfFolder.save_token(huggingface_token)
         print(f"HF Hub user: {hf_user}")
+        
         # Create repo on the Hub
         upstream_model = self.args.upstream.replace("/", "__")
         repo_name = f"superb-s3prl-{upstream_model}-{self.args.downstream}-{str(uuid.uuid4())[:8]}"
@@ -447,6 +448,7 @@ class Runner():
             private=True,
         )
         print(f"Created Hub repo: {repo_url}")
+
         # Download repo and copy templates
         REPO_PATH = self.args.expdir + "/hub_repo"
         model_repo = Repository(
@@ -454,8 +456,10 @@ class Runner():
         )
         TEMPLATES_PATH = f"./downstream/{self.args.downstream}/hf_hub_templates"
         shutil.copytree(TEMPLATES_PATH, REPO_PATH, dirs_exist_ok=True)
+
         # Copy checkpoints, tensorboard logs, and args / configs
         shutil.copytree(self.args.expdir, REPO_PATH, dirs_exist_ok=True)
+
         # By default we use model.ckpt in the PreTrainedModel interface
         CKPT_PATH = (
             REPO_PATH + f"/states-{self.config['runner']['total_steps']}.ckpt"

@@ -14,7 +14,7 @@ class PreTrainedModel(Runner):
         ckp["Args"].init_ckpt = ckp_file
         ckp["Args"].mode = "inference"
         ckp["Args"].device = "cpu"
-        ckp["Config"]["downstream_expert"]["datarc"]["dict_path"]=os.path.join(path,'char.dict')
+        ckp["Config"]["downstream_expert"]["datarc"]["dict_path"] = os.path.join(path,'char.dict')
 
         Runner.__init__(self, ckp["Args"], ckp["Config"])
 

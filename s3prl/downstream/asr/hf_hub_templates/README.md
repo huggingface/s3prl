@@ -10,4 +10,4 @@ widget:
   src: https://cdn-media.huggingface.co/speech_samples/sample1.flac
 ---
 
-# Test for s3prl push to hub after fine-tuning
+# Fine-tuned s3prl model for ASR
