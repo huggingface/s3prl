@@ -44,6 +44,7 @@ python3 run_downstream.py -m train -n ExpName -u fbank -d example
 - `-m` or `--mode` specifies the **train/evaluate** mode
 - `-u` or `--upstream` specifies the upstream pretrained model.
     - The available upstream can be checked by `-h`
+- `--hub` specifies the model Hub (PyTorch or Hugging Face) to retrieve the upstream model from. Default: `torch`
 - `-d` or `--downstream` specifies the downstream task.
     - The available downstream can be checked by `-h`
     - Each available downstream task has its corresponding folder under `downstream/`. Eg. `-d asr` means we are using the task defined in `downstream/asr/`
@@ -164,7 +165,7 @@ Only the training part is powered by **DistributedDataParallel**, and we save al
 
 ## Running with Docker
 
-We provide a Docker image that allows you to pull upstream models from the Hugging Face Hub, fine-tune on a downstream task, and push the training results (weights, configs, tensorboard traces etc) to the Hugging Face Hub. 
+We provide a Docker image that allows you to pull upstream models from the PyTorch or Hugging Face Hub, fine-tune on a downstream task, and push the training results (weights, configs, tensorboard traces etc) to the Hugging Face Hub.
 
 In the root of the repo, first build the image with
 
@@ -172,13 +173,13 @@ In the root of the repo, first build the image with
 docker build -t s3prl:latest .
 ```
 
-Then run the container the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) and with the data mounted as follows:
+Then run the container using the [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker) and with the data mounted as follows:
 
 ```
 docker run --gpus all -it -P -v /path/to/superb/data:/app/data -e "upstream_model=model_name" -e "downstream_task=task_name" -e "HF_USERNAME=username" -e "HF_PASSWORD=passwd" s3prl
 ```
 
-where `model_name` and `task_name` correspond to one of the supported models / tasks in `s3prl`, and `HF_USERNAME` and `HF_PASSWORD` are the credentials for the [Hugging Face Hub](https://huggingface.co).
+Here `model_name` and `task_name` correspond to one of the supported models / downstream tasks in `s3prl`, and `HF_USERNAME` and `HF_PASSWORD` are your account credentials for the [Hugging Face Hub](https://huggingface.co).
 
 # SUPERB Benchmark
 
