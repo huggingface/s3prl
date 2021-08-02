@@ -335,7 +335,9 @@ class Runner():
             epoch += 1
 
         pbar.close()
-        self.push_to_huggingface_hub()
+
+        if self.args.push_to_hf_hub:
+            self.push_to_huggingface_hub()
         if is_leader_process():
             logger.close()
 
