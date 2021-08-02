@@ -227,13 +227,6 @@ Specified by the command `-d asr`
 
 #### Prepare data
 
-1. There are two ways to prepare the data for this task:
-
-* The default implementation in `s3prl`
-* The implementation based on the Hugging Face Datasets library
-
-##### Preparation with s3prl
-
 1. Download [LibriSpeech](https://www.openslr.org/12) and unzip. Only need train-clean-100, dev-clean, and test-clean.
 
 2. Check the prepared file structure
@@ -259,26 +252,6 @@ Specified by the command `-d asr`
     python3 preprocess/generate_len_for_bucket.py -i "root directory of LibriSpeech" -o data/librispeech -a .flac --n_jobs 12
     ```
 
-##### Preparation with Hugging Face Datasets
-
-To download the train, validation, and test splits and compute the utterance lengths, run:
-
-```bash
-python preprocess/generate_len_for_bucket.py -o data/Librispeech --n_jobs 12 --use_datasets True
-```
-
-This will download the LibriSpeech subsets from the [`superb` dataset](https://huggingface.co/datasets/superb) on the Hugging Face Hub and store them in `~/.cache/huggingface/datasets/superb/asr`
-
-**TODO:** Verify whether we need to configure the step below to sync with the `cache_dir` of `datasets`.
-
-Change the path in `downstream/asr/config.yaml`
-
-```yaml
-downstream_expert:
-    datarc:
-        libri_root: "root directory of LibriSpeech"
-```
-
 
 #### Training
 
@@ -297,7 +270,7 @@ downstream_expert:
     batch_size: 32 # new
     libri_root: 'path/to/librispeech'
     bucket_file: 'path/to/librispeech/len_for_bucket'
-    dict_path: "path/to/s3prl_repo/s3prl/downstream/asr/char.dict" # new
+    dict_path: "./downstream/asr/char.dict" # new
 ```
 
 Then you can run the above command to train.
