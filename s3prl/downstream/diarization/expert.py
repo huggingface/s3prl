@@ -187,15 +187,16 @@ class DownstreamExpert(nn.Module):
             features = pad_sequence(features, batch_first=True)
             features = self._tile_representations(features, round(self.upstream_rate / LABEL_STRIDE))
             predicted = self.model(features).detach().cpu().unbind(dim=0)
-        
-        prediction_dir = Path(self.expdir) / "predictions"
-        prediction_dir.mkdir(exist_ok=True)
-        for p, f in zip(predicted, filenames):
-            predict = p.data.numpy()
-            predict = 1 / (1 + np.exp(-predict))
-            outpath = prediction_dir / f"{f}.h5"
-            with h5py.File(outpath, "w") as wf:
-                wf.create_dataset("T_hat", data=predict)
+
+        if filenames:
+            prediction_dir = Path(self.expdir) / "predictions"
+            prediction_dir.mkdir(exist_ok=True)
+            for p, f in zip(predicted, filenames):
+                predict = p.data.numpy()
+                predict = 1 / (1 + np.exp(-predict))
+                outpath = prediction_dir / f"{f}.h5"
+                with h5py.File(outpath, "w") as wf:
+                    wf.create_dataset("T_hat", data=predict)
 
         return predicted
 
