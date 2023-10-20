@@ -58,7 +58,7 @@ class DownstreamExpert(nn.Module):
             upstream_rate: int
                 160: for upstream with 10 ms per frame
                 320: for upstream with 20 ms per frame
-            
+
             downstream_expert: dict
                 The 'downstream_expert' field specified in your downstream config file
                 eg. downstream/example/config.yaml
@@ -70,7 +70,7 @@ class DownstreamExpert(nn.Module):
             **kwargs: dict
                 All the arguments specified by the argparser in run_downstream.py
                 and all the other fields in config.yaml, in case you need it.
-                
+
                 Note1. Feel free to add new argument for __init__ as long as it is
                 a command-line argument or a config field. You can check the constructor
                 code in downstream/runner.py
@@ -84,7 +84,7 @@ class DownstreamExpert(nn.Module):
         self.expdir = expdir
 
         self.dictionary = Dictionary.load(self.datarc["dict_path"])
-    
+
         self.projector = nn.Linear(upstream_dim, self.modelrc['project_dim'])
         model_cls = eval(self.modelrc['select'])
         model_conf = self.modelrc[self.modelrc['select']]
@@ -184,7 +184,7 @@ class DownstreamExpert(nn.Module):
                 if len(decoded) >= 1:
                     decoded = decoded[0]
                     decoded = None if len(decoded) < 1 else decoded[0]
-            
+
             pred_token_ids = log_prob.argmax(dim=-1).unique_consecutive()
             pred_token_ids = pred_token_ids[pred_token_ids != self.blank].tolist()
             pred_tokens = self.dictionary.string(pred_token_ids)
@@ -213,7 +213,7 @@ class DownstreamExpert(nn.Module):
         _, pred_words_batch = self._decode(log_probs.float().contiguous().cpu(), log_probs_len)
         hyps = [' '.join(hyp) for hyp in pred_words_batch]
 
-        if filenames != []:
+        if filenames:
             with open(Path(self.expdir) / "inference.ark", "w") as file:
                 for hyp, filename in zip(hyps, filenames):
                     file.write(f"{filename} {hyp}\n")
@@ -324,7 +324,7 @@ class DownstreamExpert(nn.Module):
 
             total_batch_num:
                 The total amount of batches in the dataloader
-        
+
         Return:
             a list of string
                 Each string is a filename we wish to use to save the current model
