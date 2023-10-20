@@ -208,7 +208,7 @@ class DownstreamExpert(nn.Module):
         log_probs = nn.functional.log_softmax(logits, dim=-1)
         return log_probs, log_probs_len
 
-    def inference(self, features, filenames):
+    def inference(self, features, filenames=None):
         log_probs, log_probs_len = self._get_log_probs(features)
         _, pred_words_batch = self._decode(log_probs.float().contiguous().cpu(), log_probs_len)
         hyps = [' '.join(hyp) for hyp in pred_words_batch]

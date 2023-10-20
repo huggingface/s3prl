@@ -182,12 +182,12 @@ class DownstreamExpert(nn.Module):
             )  # (batch_size, seq_len, feature_dim), where seq_len == labels.size(-1)
         return inputs, labels
 
-    def inference(self, features, filenames):
+    def inference(self, features, filenames=None):
         with torch.no_grad():
             features = pad_sequence(features, batch_first=True)
             features = self._tile_representations(features, round(self.upstream_rate / LABEL_STRIDE))
             predicted = self.model(features).detach().cpu().unbind(dim=0)
-        
+
         prediction_dir = Path(self.expdir) / "predictions"
         prediction_dir.mkdir(exist_ok=True)
         for p, f in zip(predicted, filenames):

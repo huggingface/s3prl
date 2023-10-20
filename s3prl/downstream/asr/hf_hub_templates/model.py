@@ -35,5 +35,5 @@ class PreTrainedModel(Runner):
         with torch.no_grad():
             features = self.upstream.model(inputs)
             features = self.featurizer.model(inputs, features)
-            preds = self.downstream.model.inference(features, [])
+            preds = self.downstream.model.inference(features)
         return {"text": preds[0]}

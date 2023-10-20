@@ -429,7 +429,7 @@ class Runner():
         with torch.no_grad():
             features = self.upstream.model(wavs)
             features = self.featurizer.model(wavs, features)
-            self.downstream.model.inference(features, [filename])
+            self.downstream.model.inference(features, filenames=[filename])
 
     def push_to_huggingface_hub(self):
         # Setup auth
